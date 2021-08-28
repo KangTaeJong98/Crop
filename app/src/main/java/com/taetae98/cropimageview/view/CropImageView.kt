@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.View
 import com.google.android.material.imageview.ShapeableImageView
 import com.taetae98.cropimageview.gesture.GestureListener
+import kotlin.math.abs
 
 class CropImageView @JvmOverloads constructor(
     context: Context,
@@ -166,12 +167,19 @@ class CropImageView @JvmOverloads constructor(
 
     val croppedBitmap: Bitmap
         get() {
+            val values = MatrixValue().apply { set(imageMatrix) }
+            Log.d("PASS", "Matrix XY : ${values.matrixX}, ${values.matrixY}")
+            Log.d("PASS", "Matrix Scale : ${values.matrixWidthScale}, ${values.matrixHeightScale}")
+
+            Log.d("PASS", "Drawable WH : ${drawable.intrinsicWidth}, ${drawable.intrinsicHeight}")
+            Log.d("PASS", "Bitmap WH : ${bitmap.width}, ${bitmap.height}")
+            Log.d("PASS", "View WH : $measuredWidth, $measuredHeight")
             return Bitmap.createBitmap(
                 bitmap,
-                translationX.toInt(),
-                translationY.toInt(),
-                (measuredWidth/scaleX).toInt(),
-                (measuredHeight/scaleY).toInt()
+                abs(values.matrixX/values.matrixWidthScale).toInt(),
+                abs(values.matrixY/values.matrixHeightScale).toInt(),
+                (measuredWidth/values.matrixWidthScale).toInt(),
+                (measuredHeight/values.matrixHeightScale).toInt()
             )
         }
 
