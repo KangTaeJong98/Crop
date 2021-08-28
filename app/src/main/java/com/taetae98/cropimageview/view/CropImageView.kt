@@ -6,7 +6,6 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import com.google.android.material.imageview.ShapeableImageView
@@ -28,7 +27,7 @@ class CropImageView @JvmOverloads constructor(
             }
 
             override fun onDrag(view: View, event: MotionEvent, movementX: Float, movementY: Float) {
-                val values = MatrixValue().apply { set(dragMatrix) }
+                val values = MatrixValue(dragMatrix)
                 val matrixWidth = drawable.intrinsicWidth * values.matrixWidthScale
                 val matrixHeight = drawable.intrinsicHeight * values.matrixHeightScale
 
@@ -65,7 +64,7 @@ class CropImageView @JvmOverloads constructor(
             }
 
             override fun onZoom(view: View, event: MotionEvent, scale: Float) {
-                val values = MatrixValue().apply { set(zoomMatrix) }
+                val values = MatrixValue(zoomMatrix)
                 val matrixWidth = drawable.intrinsicWidth * values.matrixWidthScale
                 val matrixHeight = drawable.intrinsicHeight * values.matrixHeightScale
 
@@ -130,21 +129,6 @@ class CropImageView @JvmOverloads constructor(
         }
     }
 
-//    override fun setImageURI(uri: Uri?) {
-//        super.setImageURI(uri)
-//        setImageCenter()
-//    }
-//
-//    override fun setImageBitmap(bm: Bitmap?) {
-//        super.setImageBitmap(bm)
-//        setImageCenter()
-//    }
-//
-//    override fun setImageDrawable(drawable: Drawable?) {
-//        super.setImageDrawable(drawable)
-//        setImageCenter()
-//    }
-
     private fun setImageCenter() {
         val imageRectF = RectF(0F, 0F, drawable.intrinsicWidth.toFloat(), drawable.intrinsicHeight.toFloat())
 
@@ -167,13 +151,8 @@ class CropImageView @JvmOverloads constructor(
 
     val croppedBitmap: Bitmap
         get() {
-            val values = MatrixValue().apply { set(imageMatrix) }
-            Log.d("PASS", "Matrix XY : ${values.matrixX}, ${values.matrixY}")
-            Log.d("PASS", "Matrix Scale : ${values.matrixWidthScale}, ${values.matrixHeightScale}")
+            val values = MatrixValue(imageMatrix)
 
-            Log.d("PASS", "Drawable WH : ${drawable.intrinsicWidth}, ${drawable.intrinsicHeight}")
-            Log.d("PASS", "Bitmap WH : ${bitmap.width}, ${bitmap.height}")
-            Log.d("PASS", "View WH : $measuredWidth, $measuredHeight")
             return Bitmap.createBitmap(
                 bitmap,
                 abs(values.matrixX/values.matrixWidthScale).toInt(),
@@ -188,10 +167,10 @@ class CropImageView @JvmOverloads constructor(
             return (drawable as BitmapDrawable).bitmap
         }
 
-    class MatrixValue {
+    class MatrixValue(matrix: Matrix) {
         private val values by lazy { FloatArray(9) }
 
-        fun set(matrix: Matrix) {
+        init {
             matrix.getValues(values)
         }
 
