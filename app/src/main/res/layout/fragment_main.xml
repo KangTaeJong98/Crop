@@ -13,7 +13,7 @@
         android:layout_height="match_parent"
         tools:context=".activity.MainActivity">
 
-        <com.taetae98.cropimageview.view.CropImageView
+        <com.taetae98.module.view.CropImageView
             android:id="@+id/image_view"
             android:background="@color/white"
             android:layout_width="0dp"

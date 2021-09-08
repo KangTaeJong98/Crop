@@ -1,4 +1,4 @@
-package com.taetae98.cropimageview.view
+package com.taetae98.module.view
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -9,7 +9,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import com.google.android.material.imageview.ShapeableImageView
-import com.taetae98.cropimageview.gesture.GestureListener
+import com.taetae98.module.gesture.GestureListener
 import kotlin.math.abs
 
 class CropImageView @JvmOverloads constructor(
@@ -157,8 +157,8 @@ class CropImageView @JvmOverloads constructor(
                 bitmap,
                 abs(values.matrixX/values.matrixWidthScale).toInt(),
                 abs(values.matrixY/values.matrixHeightScale).toInt(),
-                (measuredWidth/values.matrixWidthScale).toInt(),
-                (measuredHeight/values.matrixHeightScale).toInt()
+                (measuredWidth/values.matrixWidthScale + 0.5).toInt(),
+                (measuredHeight/values.matrixHeightScale + 0.5).toInt()
             )
         }
 
