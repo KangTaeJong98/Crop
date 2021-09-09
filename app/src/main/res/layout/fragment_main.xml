@@ -11,9 +11,9 @@
         android:background="@color/black"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".activity.MainActivity">
+        tools:context="com.taetae98.crop.activity.MainActivity">
 
-        <com.taetae98.module.view.CropImageView
+        <com.taetae98.modules.crop.view.CropImageView
             android:id="@+id/image_view"
             android:background="@color/white"
             android:layout_width="0dp"
