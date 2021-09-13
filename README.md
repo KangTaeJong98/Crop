@@ -3,6 +3,7 @@
 # CropImageView
 ***
 ### 🐘Dependency
+#### Lastest Version : 1.0.0
 [more (Maven, sbt, leiningen)](https://jitpack.io/#KangTaeJong98/Crop)
 ```kotlin
 allprojects {
