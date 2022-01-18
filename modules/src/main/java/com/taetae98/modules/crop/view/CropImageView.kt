@@ -5,11 +5,16 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
+import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import com.google.android.material.imageview.ShapeableImageView
 import com.taetae98.modules.gesture.listener.GestureListener
+import java.io.Serializable
 import kotlin.math.abs
 
 class CropImageView @JvmOverloads constructor(
@@ -23,10 +28,14 @@ class CropImageView @JvmOverloads constructor(
             private val zoomMatrix by lazy { Matrix() }
 
             override fun onDragStart(view: View, event: MotionEvent) {
+                if (!isDraggable) return
+
                 dragMatrix.set(imageMatrix)
             }
 
             override fun onDrag(view: View, event: MotionEvent, movementX: Float, movementY: Float) {
+                if (!isDraggable) return
+
                 val values = MatrixValue(dragMatrix)
                 val matrixWidth = drawable.intrinsicWidth * values.matrixWidthScale
                 val matrixHeight = drawable.intrinsicHeight * values.matrixHeightScale
@@ -60,10 +69,14 @@ class CropImageView @JvmOverloads constructor(
             }
 
             override fun onZoomStart(view: View, event: MotionEvent) {
+                if (!isZoomable) return
+
                 zoomMatrix.set(imageMatrix)
             }
 
             override fun onZoom(view: View, event: MotionEvent, scale: Float) {
+                if (!isZoomable) return
+
                 val values = MatrixValue(zoomMatrix)
                 val matrixWidth = drawable.intrinsicWidth * values.matrixWidthScale
                 val matrixHeight = drawable.intrinsicHeight * values.matrixHeightScale
@@ -116,8 +129,13 @@ class CropImageView @JvmOverloads constructor(
             }
         }
     }
+    private var savedMatrixValue: MatrixValue? = null
+
+    var isDraggable: Boolean = true
+    var isZoomable: Boolean = true
 
     init {
+        isSaveEnabled = true
         adjustViewBounds = true
         scaleType = ScaleType.MATRIX
         setOnTouchListener(gestureListener)
@@ -126,6 +144,24 @@ class CropImageView @JvmOverloads constructor(
             if (drawable is BitmapDrawable) {
                 setImageCenter()
             }
+        }
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        return super.onSaveInstanceState()?.let {
+            Bundle().apply {
+                putParcelable("super", it)
+                putSerializable("matrixValue", MatrixValue(imageMatrix))
+            }
+        }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is Bundle) {
+            super.onRestoreInstanceState(state.getParcelable("super"))
+            savedMatrixValue = state.getSerializable("matrixValue") as? MatrixValue
+        } else {
+            super.onRestoreInstanceState(state)
         }
     }
 
@@ -144,9 +180,23 @@ class CropImageView @JvmOverloads constructor(
             RectF(0F, -y, measuredWidth.toFloat(), measuredHeight + y)
         }
 
-        imageMatrix = Matrix(imageMatrix).apply {
-            setRectToRect(imageRectF, viewRectF, Matrix.ScaleToFit.CENTER)
+        if (savedMatrixValue == null) {
+            imageMatrix = Matrix(imageMatrix).apply {
+                setRectToRect(imageRectF, viewRectF, Matrix.ScaleToFit.CENTER)
+            }
+        } else {
+            restoreImageMatrix()
         }
+    }
+
+    private fun restoreImageMatrix() {
+        imageMatrix = savedMatrixValue?.let {
+            Matrix().apply {
+                postScale(it.matrixWidthScale, it.matrixHeightScale)
+                postTranslate(it.matrixX, it.matrixY)
+            }
+        }
+        savedMatrixValue = null
     }
 
     val croppedBitmap: Bitmap
@@ -167,11 +217,15 @@ class CropImageView @JvmOverloads constructor(
             return (drawable as BitmapDrawable).bitmap
         }
 
-    class MatrixValue(matrix: Matrix) {
-        private val values by lazy { FloatArray(9) }
+    class MatrixValue(private val values: FloatArray) : Serializable {
+        constructor(matrix: Matrix) : this(FloatArray(9)) {
+            matrix.getValues(values)
+        }
 
         init {
-            matrix.getValues(values)
+            if (values.size < 9) {
+                throw Exception("Minimum size is 9. (size : ${values.size})")
+            }
         }
 
         val matrixX: Float
@@ -193,5 +247,9 @@ class CropImageView @JvmOverloads constructor(
             get() {
                 return values[4]
             }
+
+        override fun toString(): String {
+            return "MatrixValue(matrixX:$matrixX, matrixY:$matrixY, matrixWidthScale:$matrixWidthScale, matrixHeightScale:$matrixHeightScale)"
+        }
     }
 }

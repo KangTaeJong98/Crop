@@ -1,6 +1,5 @@
 package com.taetae98.crop.fragment
 
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -8,19 +7,18 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.taetae98.crop.R
 import com.taetae98.crop.databinding.FragmentMainBinding
-import com.taetae98.crop.viewmodel.BitmapViewModel
+import com.taetae98.crop.viewmodel.CropImageViewModel
 import com.taetae98.modules.library.binding.BindingFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainFragment : BindingFragment<FragmentMainBinding>(R.layout.fragment_main) {
-    private val viewModel by activityViewModels<BitmapViewModel>()
+    private val viewModel by activityViewModels<CropImageViewModel>()
 
     private val chooseImage = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) {
-        val bitmap = BitmapFactory.decodeFileDescriptor(requireContext().contentResolver.openFileDescriptor(it, "r")?.fileDescriptor)
-        binding.imageView.setImageBitmap(bitmap)
+        viewModel.imageURI.postValue(it)
     }
 
 
@@ -34,8 +32,17 @@ class MainFragment : BindingFragment<FragmentMainBinding>(R.layout.fragment_main
         savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        chooseImage.launch("image/*")
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.viewModel = viewModel
+        if (viewModel.imageURI.value == null) {
+            chooseImage.launch("image/*")
+        }
+
+        binding.imageView.tag = "Main"
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -45,7 +52,7 @@ class MainFragment : BindingFragment<FragmentMainBinding>(R.layout.fragment_main
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId) {
             R.id.crop -> {
-                viewModel.bitmap.value = binding.imageView.croppedBitmap
+                viewModel.croppedImage.value = binding.imageView.croppedBitmap
                 findNavController().navigate(MainFragmentDirections.actionMainFragmentToResultFragment())
                 true
             }
