@@ -196,7 +196,6 @@ class CropImageView @JvmOverloads constructor(
                 postTranslate(it.matrixX, it.matrixY)
             }
         }
-        savedMatrixValue = null
     }
 
     val croppedBitmap: Bitmap
