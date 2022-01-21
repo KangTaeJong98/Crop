@@ -6,12 +6,11 @@ import android.graphics.Matrix
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewTreeObserver
 import com.google.android.material.imageview.ShapeableImageView
 import com.taetae98.modules.gesture.listener.GestureListener
 import java.io.Serializable
@@ -130,6 +129,11 @@ class CropImageView @JvmOverloads constructor(
         }
     }
     private var savedMatrixValue: MatrixValue? = null
+    private val onGlobalLayoutListener by lazy {
+        ViewTreeObserver.OnGlobalLayoutListener {
+            onGlobalLayoutChanged()
+        }
+    }
 
     var isDraggable: Boolean = true
     var isZoomable: Boolean = true
@@ -140,11 +144,7 @@ class CropImageView @JvmOverloads constructor(
         scaleType = ScaleType.MATRIX
         setOnTouchListener(gestureListener)
 
-        viewTreeObserver.addOnGlobalLayoutListener {
-            if (drawable is BitmapDrawable) {
-                setImageCenter()
-            }
-        }
+        viewTreeObserver.addOnGlobalLayoutListener(onGlobalLayoutListener)
     }
 
     override fun onSaveInstanceState(): Parcelable? {
@@ -162,6 +162,13 @@ class CropImageView @JvmOverloads constructor(
             savedMatrixValue = state.getSerializable("matrixValue") as? MatrixValue
         } else {
             super.onRestoreInstanceState(state)
+        }
+    }
+
+    private fun onGlobalLayoutChanged() {
+        if (drawable is BitmapDrawable) {
+            setImageCenter()
+            viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener)
         }
     }
 
@@ -196,6 +203,8 @@ class CropImageView @JvmOverloads constructor(
                 postTranslate(it.matrixX, it.matrixY)
             }
         }
+
+        savedMatrixValue = null
     }
 
     val croppedBitmap: Bitmap
