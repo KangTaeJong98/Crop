@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdk 24
         targetSdk 31
-        versionCode 1100
-        versionName "1.1.00"
+        versionCode 1101
+        versionName "1.1.01"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -52,7 +52,7 @@ afterEvaluate {
                 from components.release
 
                 groupId = 'com.taetae98.modules.crop'
-                version = '1.1.00'
+                version = '1.1.01'
             }
             debug(MavenPublication) {
                 // The following applies a component to this publication
@@ -60,7 +60,7 @@ afterEvaluate {
                 from components.debug
 
                 groupId = 'com.taetae98.modules.crop'
-                version = '1.1.00'
+                version = '1.1.01'
             }
         }
     }
