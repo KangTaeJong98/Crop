@@ -173,8 +173,8 @@ class CropImageView @JvmOverloads constructor(
     }
 
     private fun setImageCenter() {
-        val widthDiff = abs(measuredWidth - drawable.intrinsicWidth)
-        val heightDiff = abs(measuredHeight - drawable.intrinsicHeight)
+        val widthDiff = measuredWidth - drawable.intrinsicWidth
+        val heightDiff = measuredHeight - drawable.intrinsicHeight
 
         val imageRectF = RectF(0F, 0F, drawable.intrinsicWidth.toFloat(), drawable.intrinsicHeight.toFloat())
         val viewRectF = if (widthDiff < heightDiff) {
